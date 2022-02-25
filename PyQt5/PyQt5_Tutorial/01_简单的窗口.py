@@ -1,12 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
-ZetCode PyQt5 tutorial 
-In this example, we create a simple
-window in PyQt5.
-author: Jan Bodnar
-website: zetcode.com 
-Last edited: August 2017
+# Tkinter
+https://www.cnblogs.com/shwee/p/9427975.html
+https://www.runoob.com/python/python-gui-tkinter.html
 """
 import sys
 # 这里引入了PyQt5.QtWidgets模块，这个模块包含了基本的组件。
@@ -28,6 +25,8 @@ if __name__ == '__main__':
     # 最后，我们进入了应用的主循环中，事件处理器这个时候开始工作。主循环从窗口上接收事件，并把事件传入到派发到应用控件里。
     # 当调用exit()方法或直接销毁主控件时，主循环就会结束。sys.exit()方法能确保主循环安全退出。外部环境能通知主控件怎么结束。
     sys.exit(app.exec_())
+
+
 
 
 

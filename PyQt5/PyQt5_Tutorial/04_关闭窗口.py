@@ -18,6 +18,8 @@ class Example(QWidget):
         # QCoreApplication是在QApplication里创建的。 点击事件和能终止进程并退出应用的quit函数绑定在了一起。
         # 在发送者和接受者之间建立了通讯，发送者就是按钮，接受者就是应用对象。
         qbtn.clicked.connect(QCoreApplication.instance().quit)
+        # qbtn.clicked.connect(self.close)    # 暂时认为是等价的
+
         qbtn.resize(qbtn.sizeHint())
         qbtn.move(50, 50)
         self.setGeometry(300, 300, 250, 150)

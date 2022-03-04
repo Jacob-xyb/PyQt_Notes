@@ -1,10 +1,10 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow
 from PyQt5.QtGui import QIcon
 
 
 # 创建了一个类的调用，这个类继承自QWidget
-class Example(QWidget):
+class Example(QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()

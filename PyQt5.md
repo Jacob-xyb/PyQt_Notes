@@ -132,48 +132,103 @@ if __name__ == "__main__":
 
 ## 分文件调用
 
-- 文件结构
+https://zhuanlan.zhihu.com/p/95082345?utm_source=com.example.android.notepad
+
+1、使用Qt Designer新建四个不同的ui文件，分别为camerapage.ui、drivepage.ui、mainpage.ui、rangingpage.ui
+
+2、使用pyuic5将四个ui文件转换成对应的py文件，分别为ui_camerapage.py、ui_drivepage.py、ui_mainpage.py、ui_rangingpage.py
+
+3、创建四个“ui_”文件对应的业务逻辑文件，分别为call_camerapage.py、call_drivepage.py、call_mainpage.py、call_rangingpage.py
 
 ```python
-|-- Widget1.py
-|
-|-- Widget2.py
-|
-|-- UIMain.py
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import pyqtSignal,Qt
+from HomePages.ui_camerapage import Ui_CameraPage
+
+class CameraPageWindow(QWidget,Ui_CameraPage):
+ #声明信号
+ 	returnSignal = pyqtSignal()
+
+ 	def __init__(self,parent=None):
+ 		super(CameraPageWindow, self).__init__(parent)
+ 		self.setupUi(self)
+ 		self.initUI()
+
+ 	def initUI(self):
+ 		self.setLayout(self.gridLayout)
+
+ 	self.returnButton.clicked.connect(self.returnSignal)
 ```
 
-- Widget.py
-
-只需要知道UI类名
-
-- UIMain.py
+4、这时候需要一个总界面，用来整合所有子页面，并负责界面之间的切换等功能，新建一个mainwindow.py文件，内容如下：
 
 ```python
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import *
+
+from call_mainpage import MainPageWindow
+from call_camerapage import CameraPageWindow
+from call_drivepage import DrivePageWindow
+from call_rangingpage import RangingPageWindow
+
+class MainWindow(QWidget):
+     def __init__(self):
+         super().__init__()
+         self.initUI()
+
+     def initUI(self):
+         self.resize(480,320)
+         self.layout = QGridLayout()
+         self.setLayout(self.layout)
+
+         self.Stack = QStackedWidget()
+         self.layout.addWidget(self.Stack)
+         self.mainPageUi = MainPageWindow()
+         self.cameraPageUi = CameraPageWindow()
+         self.drivePageUi = DrivePageWindow()
+         self.rangingPageUi = RangingPageWindow()
+
+         self.Stack.addWidget(self.mainPageUi)
+         self.Stack.addWidget(self.cameraPageUi)
+         self.Stack.addWidget(self.drivePageUi)
+         self.Stack.addWidget(self.rangingPageUi)
+
+         self.mainPageUi.chooseSignal.connect(self.showDialog)
+
+         self.cameraPageUi.returnSignal.connect(self.returnDialog)
+         self.drivePageUi.returnSignal.connect(self.returnDialog)
+         self.rangingPageUi.returnSignal.connect(self.returnDialog)
+
+     def showDialog(self,msg):
+         print(0)
+         if msg == 'camera':
+         self.Stack.setCurrentIndex(1)
+         print(1)
+         elif msg == 'ranging':
+         self.Stack.setCurrentIndex(2)
+         print(2)
+         elif msg == 'drive':
+         self.Stack.setCurrentIndex(3)
+         print(3)
+
+         def returnDialog(self):
+         self.Stack.setCurrentIndex(0)
+```
+
+这里使用了QStackedWidget叠层窗口，将所有子窗口添加进来，根据不同的点击显示不同的页面。
+
+5、最后，需要有一个main入口，我们单独再写一个main.py文件，这也和C++工程比较统一，具体内容如下：
+
+```python
+from PyQt5.QtWidgets import *
+from mainwindow import MainWindow
 import sys
-from Widget1 import Ui_Form1
-from Widget2 import Ui_Form2
-from PyQt5.QtWidgets import QWidget, QApplication, QTextEdit, QHBoxLayout
-from PyQt5 import QtCore
 
-
-class MyMainForm(QWidget):
-    def __init__(self, parent=None):
-        super(MyMainForm, self).__init__(parent)
-        self.resize(600, 400)
-        self.widget1 = QWidget(self)
-        Ui_Form1().setupUi(self.widget1)
-        self.widget2 = QWidget(self)
-        Ui_Form2().setupUi(self.widget2)
-        self.hbox = QHBoxLayout()
-        self.hbox.addWidget(self.widget1)
-        self.hbox.addWidget(self.widget2)
-        self.setLayout(self.hbox)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = QApplication(sys.argv)
-    myWin = MyMainForm()
-    myWin.show()
+    mainWindow = MainWindow()
+    mainWindow.show()
     sys.exit(app.exec_())
 ```
 

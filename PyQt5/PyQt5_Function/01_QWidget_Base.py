@@ -2,6 +2,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QIcon
 
 app = QApplication(sys.argv)
 # == QWidge控件是一个用户界面的基本控件，它提供了基本的应用构造器。默认情况下，构造器是没有父级的，没有父级的构造器被称为窗口（window）。
@@ -17,6 +18,9 @@ tempQize = QSize(380, 280)
 w.setFixedSize(tempQize)    # == w.setFixedSize(int, int)
 # == 改变尺寸 == setGeometry()同时改变位置和大小
 w.setGeometry(580, 380, 360, 260)
+
+# == 设置图标
+w.setWindowIcon(QIcon('..\\..\\image\\Globe.ico'))
 
 # == move()是修改控件位置的的方法。注：屏幕坐标系的原点是屏幕的左上角。
 w.move(600, 400)      # 不用好像是居中

@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QFormLayout, QLineEdit
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette, QPixmap, QIntValidator, QDoubleValidator
+from PyQt5.QtCore import Qt, QRegExp
+from PyQt5.QtGui import QPalette, QPixmap, QIntValidator, QDoubleValidator, QRegExpValidator
 
 
 class Ui_Form(object):
@@ -18,12 +18,15 @@ class Ui_Form(object):
         Validator_Int.setRange(0, 9)
         # 验证器 - double
         Validator_Double = QDoubleValidator(self)
-        Validator_Double.setRange(-360., 360.)  # 有bug
-        Validator_Double.setTop(360)
+        Validator_Double.setRange(-360, 360)  # 有bug
         Validator_Double.setNotation(QDoubleValidator.StandardNotation)  # 不设置就会超出范围
         Validator_Double.setDecimals(2)  # 不设置就不能填小数
+        # 验证器 - 字母和数字
+        Validator_word = QRegExpValidator(self)
+        reg = QRegExp("[a-zA-Z0-9]+$")
+        Validator_word.setRegExp(reg)
         self.LEdit_Validator = QLineEdit(Form)
-        self.LEdit_Validator.setValidator(Validator_Double)
+        self.LEdit_Validator.setValidator(Validator_word)
 
         flo.addRow("Normal", self.LEdit_Normal)  # 创建一个label
         flo.addRow("NoEcho", self.LEdit_NoEcho)

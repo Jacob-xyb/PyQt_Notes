@@ -15,6 +15,10 @@ class WinForm(QWidget):
         self.initUI()
         self.init_label()
 
+        # 基本参数
+        print("QLabel().sizeHint(): ", QLabel().sizeHint())
+        print("QLabel().minimumSizeHint(): ", QLabel().minimumSizeHint())
+
     def initUI(self):
         self.setWindowTitle("QLabel_Base")
         self.setGeometry(600, 500, 400, 300)

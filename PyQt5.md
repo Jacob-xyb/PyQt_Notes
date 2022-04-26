@@ -130,6 +130,53 @@ if __name__ == "__main__":
     sys.exit(app.exec_())
 ```
 
+## 分文件调用
+
+- 文件结构
+
+```python
+|-- Widget1.py
+|
+|-- Widget2.py
+|
+|-- UIMain.py
+```
+
+- Widget.py
+
+只需要知道UI类名
+
+- UIMain.py
+
+```python
+import sys
+from Widget1 import Ui_Form1
+from Widget2 import Ui_Form2
+from PyQt5.QtWidgets import QWidget, QApplication, QTextEdit, QHBoxLayout
+from PyQt5 import QtCore
+
+
+class MyMainForm(QWidget):
+    def __init__(self, parent=None):
+        super(MyMainForm, self).__init__(parent)
+        self.resize(600, 400)
+        self.widget1 = QWidget(self)
+        Ui_Form1().setupUi(self.widget1)
+        self.widget2 = QWidget(self)
+        Ui_Form2().setupUi(self.widget2)
+        self.hbox = QHBoxLayout()
+        self.hbox.addWidget(self.widget1)
+        self.hbox.addWidget(self.widget2)
+        self.setLayout(self.hbox)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    myWin = MyMainForm()
+    myWin.show()
+    sys.exit(app.exec_())
+```
+
 # Pydesigner
 
 ## 布局管理
@@ -155,7 +202,7 @@ Qt Designer 提供了4种窗口布局方式。
 
    部件的大小提示，就是指的部件的默认大小，提示的意思是Qt的建议或推荐。
 
-# 控件描述
+# PyQt5 基础控件描述
 
 ## QMainWindow
 
@@ -493,6 +540,22 @@ if __name__ == '__main__':
     myWin.show()
     sys.exit(app.exec_())
 ```
+
+# PyQt5 高级界面控件
+
+## QTableView
+
+​	一个应用需要和一批数据（比如数组，列表）进行交互，然后以表格的形式输出这些信息，这时就要用到QTableView类了，在QTableView中可以使用自定义的数据模型在显示内容，通过setModel来绑定数据源。
+
+​	QTableWidget 继承自 QTableView，主要区别是 QTableView 可以使用自定义的数据模型来显示内容，而QTableWidget只能使用标准的数据模型，并且其单元格数据是通过 QTableWidgetItem 对象来实现的。通常使用 QTableWidget 就能够满足我们的需求。
+
+​	QTableView 控件可以绑定一个模型数据用来更新控件上的内容，可用的模式如下表所示：
+
+| 名称 | 含义 |
+| ---- | ---- |
+|      |      |
+|      |      |
+|      |      |
 
 
 

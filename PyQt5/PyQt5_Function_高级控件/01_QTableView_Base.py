@@ -1,13 +1,13 @@
 from PyQt5.QtWidgets import QApplication, QWidget
 # from PyQt5.QtCore import QSize
 # from PyQt5.QtGui import QIcon
-
+# TODO: Page242
 import sys
 
 
 class Ui_Form(object):
     def setupUi(self, Form):
-        pass
+        Form.resize(500, 300)
 
 
 class MyMainForm(QWidget, Ui_Form):
@@ -23,3 +23,4 @@ if __name__ == '__main__':
     myWin = MyMainForm()
     myWin.show()
     sys.exit(app.exec_())
+

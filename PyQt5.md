@@ -612,7 +612,75 @@ if __name__ == '__main__':
 |      |      |
 |      |      |
 
+```python
+from PyQt5.QtWidgets import QApplication, QWidget, QTableView, QVBoxLayout
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+# TODO: Page242
+import sys
 
+
+class Ui_Form(object):
+    def setupUi(self, Form):
+        Form.resize(500, 300)
+        # 创建一个标准数据model
+        self.model = QStandardItemModel(4, 4)
+        self.HeaderLabels = ["标题1", "标题2", "标题3", "标题4"]
+        self.model.setHorizontalHeaderLabels(self.HeaderLabels)
+        # 将model装填数据
+        for row in range(4):
+            for col in range(len(self.HeaderLabels)):
+                item = QStandardItem("row %s, col %s" % (row, col))
+                self.model.setItem(row, col, item)
+        # 创建一个 QTableView 对象
+        self.tableView = QTableView(Form)
+        # 将数据模型装载进去
+        self.tableView.setModel(self.model)
+
+        dlgLayout = QVBoxLayout()
+        dlgLayout.addWidget(self.tableView)
+        Form.setLayout(dlgLayout)
+
+
+
+class MyMainForm(QWidget, Ui_Form):
+    def __init__(self, parent=None):
+        super(MyMainForm, self).__init__(parent)
+        self.setupUi(self)  # 比较固定的初始化调用方式
+        print(self.HeaderLabels)
+
+
+if __name__ == '__main__':
+    import sys
+
+    app = QApplication(sys.argv)
+    myWin = MyMainForm()
+    myWin.show()
+    sys.exit(app.exec_())
+```
+
+![image-20220427135140238](https://s2.loli.net/2022/04/27/kFDE3Q9TbWXPyuO.png)
+
+1. 需要表格填满窗口
+
+   ```python
+   self.tableView.horizontalHeader().setStretchLastSection(True)   # 最后一节填充
+   self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)     # 每列都平均填充
+   ```
+
+2. 删除数据
+
+   ```python
+   # 删除数据,需要选中
+   # 删除数据 == 第一种
+   indexs = self.tableView.selectionModel().selection().indexes()
+   if len(indexs) > 0:
+       index = indexs[0]
+       self.model.removeRows(index.row(), 1)
+   # 删除数据 == 第二种
+   index = self.tableView.currentIndex()
+   self.model.removeRows(index.row())
+   ```
 
 # PyQt5_Tutorial
 

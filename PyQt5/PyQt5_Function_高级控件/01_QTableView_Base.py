@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QTableView, QVBoxLayout, QHeaderView
-# from PyQt5.QtCore import *
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-# TODO: Page242
+# Page242
 import sys
 
 
@@ -16,6 +16,7 @@ class Ui_Form(object):
         for row in range(4):
             for col in range(len(self.HeaderLabels)):
                 item = QStandardItem("row %s, col %s" % (row, col))
+                item.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)    # 可以设置居中之类的
                 self.model.setItem(row, col, item)
         # 创建一个 QTableView 对象
         self.tableView = QTableView(Form)

@@ -613,9 +613,9 @@ if __name__ == '__main__':
 |      |      |
 
 ```python
-from PyQt5.QtWidgets import QApplication, QWidget, QTableView, QVBoxLayout
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt5.QtWidgets import QApplication, QWidget, QTableView, QVBoxLayout, QHeaderView
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 # TODO: Page242
 import sys
 
@@ -631,16 +631,31 @@ class Ui_Form(object):
         for row in range(4):
             for col in range(len(self.HeaderLabels)):
                 item = QStandardItem("row %s, col %s" % (row, col))
+                item.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)    # 可以设置居中之类的
                 self.model.setItem(row, col, item)
         # 创建一个 QTableView 对象
         self.tableView = QTableView(Form)
         # 将数据模型装载进去
         self.tableView.setModel(self.model)
 
+        # self.tableView.horizontalHeader().setStretchLastSection(True)   # 最后一节填充
+        # self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)     # 每列都平均填充
+
+        # 添加数据
+        # 添加数据 == 填充一行数据
+        self.model.appendRow([
+            QStandardItem("xxx"),
+            QStandardItem("xxx"),
+            QStandardItem("xxx"),
+            QStandardItem("xxx")
+        ])
+        # 添加数据 == 只添加单个数据就只会填充一格, 两个数据就只会填充两格
+        self.model.appendRow([QStandardItem("yyy"), QStandardItem("zzz")])
+
+
         dlgLayout = QVBoxLayout()
         dlgLayout.addWidget(self.tableView)
         Form.setLayout(dlgLayout)
-
 
 
 class MyMainForm(QWidget, Ui_Form):
@@ -657,6 +672,7 @@ if __name__ == '__main__':
     myWin = MyMainForm()
     myWin.show()
     sys.exit(app.exec_())
+
 ```
 
 ![image-20220427135140238](https://s2.loli.net/2022/04/27/kFDE3Q9TbWXPyuO.png)
@@ -681,6 +697,95 @@ if __name__ == '__main__':
    index = self.tableView.currentIndex()
    self.model.removeRows(index.row())
    ```
+
+## QListView
+
+## QListWidget
+
+## QTableViewWidget
+
+​	QTableWidget 是QT程序中常用的显示数据表格的空间，很类似于VC、C#中的DataGrid。说到QTableWidget，就必须讲一下它跟QTabelView的区别了。
+
+​	QTableWidget 是 QTableView 的子类，主要的区别是 QTableView 可以使用自定义的数据模型来显示内容(也就是先要通过setModel来绑定数据源)，而 QTableWidget 则只能使用标准的数据模型，并且其单元格数据是QTableWidgetItem的对象来实现的(也就是不需要数据源，将逐个单元格内的信息填好即可)。这主要体现在QTableView类中有setModel成员函数，而到了QTableWidget类中，该成员函数变成了私有。使用QTableWidget就离不开QTableWidgetItem。QTableWidgetItem用来表示表格中的一个单元格，正个表格都需要用逐个单元格构建起来。
+
+| 区别点                  | QTableView                       | QTableWidget                                                 |
+| :---------------------- | :------------------------------- | :----------------------------------------------------------- |
+| 继承关系                |                                  | QTableWidget继承自QTableView                                 |
+| 使用数据模型setModel    | 可以使用setModel设置数据模型     | setModel是私有函数，不难使用该函数设置数据模型               |
+| 显示复选框setCheckState | 没有函数实现复选框               | QTableWidgetItem类中的setCheckState(Qt::Checked);可以设置复选框 |
+| 与QSqlTableModel绑定    | QTableView能与QSqlTableModel绑定 | QtableWidget不能与QSqlTableModel绑定                         |
+
+- 两个遍历的区别
+
+```python
+# qtableView遍历
+for i in range(self.model.rowCount()):
+    for j in range(self.model.columnCount()):
+        c = self.model.data(self.model.index(i,j))
+        print(c)
+
+# qtablewidget遍历
+for i in range(self.tablewidget.rowCount()):
+    for j in range(self.tablewidget.columnCount()):
+        tb1.append(self.tablewidget.item(i,j).text())
+```
+
+### Base
+
+```python
+from PyQt5.QtWidgets import QApplication, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, \
+    QHeaderView
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+# TODO: Page248
+import sys
+
+
+class Ui_Form(object):
+    def setupUi(self, Form):
+        Form.resize(500, 300)
+        self.HeaderLabels = ["标题1", "标题2", "标题3", "标题4"]
+        # 创建一个 QTableWidget 对象
+        self.tableWidget = QTableWidget(Form)
+        # 创建一个 QTableWidget 对象 == 设置行列
+        self.tableWidget.setRowCount(4)
+        self.tableWidget.setColumnCount(4)
+        # 创建一个 QTableWidget 对象 == 设置标签
+        self.tableWidget.setHorizontalHeaderLabels(self.HeaderLabels)
+        self.tableWidget.setVerticalHeaderLabels(['a', 'b', 'c', 'd'])
+        # 用 QTableWidgetItem 装填数据
+        for row in range(4):
+            for col in range(len(self.HeaderLabels)):
+                # QTableWidget 必须用自己的 Item 装填数据， setModel() 变为了私有方法
+                item = QTableWidgetItem("row %s, col %s" % (row, col))
+                item.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)    # 可以设置居中之类的
+                self.tableWidget.setItem(row, col, item)
+        # 格式设置
+        # self.tableView.horizontalHeader().setStretchLastSection(True)   # 最后一节填充
+        # self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)     # 每列都平均填充
+        dlgLayout = QVBoxLayout()
+        dlgLayout.addWidget(self.tableWidget)
+        Form.setLayout(dlgLayout)
+
+
+class MyMainForm(QWidget, Ui_Form):
+    def __init__(self, parent=None):
+        super(MyMainForm, self).__init__(parent)
+        self.setupUi(self)  # 比较固定的初始化调用方式
+        print(self.HeaderLabels)
+
+
+if __name__ == '__main__':
+    import sys
+
+    app = QApplication(sys.argv)
+    myWin = MyMainForm()
+    myWin.show()
+    sys.exit(app.exec_())
+
+```
+
+
 
 # PyQt5_Tutorial
 
@@ -935,6 +1040,80 @@ class QDesktopWidget(QWidget):
 availableGeometry(self, screen: int = -1) -> QRect		# 获取显示器的分辨率
 availableGeometry(self, QWidget) -> QRect
 availableGeometry(self, QPoint) -> QRect
+```
+
+### QTableWidget
+
+```python
+class QTableWidget(QTableView):
+    """
+    QTableWidget(parent: QWidget = None)
+    QTableWidget(int, int, parent: QWidget = None)
+    """
+```
+
+#### BaseFunction
+
+```python
+#  QTableWidget
+clear(self)					# 清除所有数据包括行列
+clearContents(self)      	# 清除所有数据不包括行列
+columnCount(self) -> int	# 返回行数
+rowCount(self) -> int		# 返回行数
+setShowGrid(self, bool)		# 显示网格线,默认True
+setColumnWidth(self, int, int)		# 设置单元格列的宽度
+setRowHeight(self, int, int)		# 设置单元格行的高度
+setHorizontalHeaderLabels(self, Iterable[str])		# 设置水平标签
+setVerticalHeaderLabels(self, Iterable[str])		# 设置垂直标签
+setItem(self, int, int, QTableWidgetItem)			# 在单元空间内添加控件
+horizontalHeader(self) -> QHeaderView		# 获得表格头，以便执行隐藏
+
+
+# TODO
+setSelectionBehavior(self, QAbstractItemView.SelectionBehavior)		# 设置表格的选择行为
+```
+
+#### .setRowCount() & .setColumnCount()
+
+```python
+setRowCount(self, int)			# 设置行数
+setColumnCount(self, int)		# 设置列数
+```
+
+以行为例：
+
+假设现在有 4 行数据，setRowCount(6) 后， 4 行数据会被保留，新增 2 行空行；
+
+假设现在有 4 行数据，setRowCount(2) 后， 4 行数据 中的前 2 行会被保留；
+
+假设现在有 4 行数据，setRowCount(2)  +  setRowCount(6) 后， 4 行数据 中的前 2 行会被保留，后面追加 4 行空行数据；
+
+#### .setSpan()
+
+```python
+setSpan(self, int, int, int, int)		# 合并单元格
+```
+
+`setSpan(int row, int column, int rowSpanCount, int columnSpanCount)`
+
+要改变单元格的第 **row** 行第 **column** 列，要合并 **rowSpanCount** 行数和 **columnSpanCount** 列数
+
+#### .setEditTriggers()
+
+```python
+setEditTriggers(self, Union[QAbstractItemView.EditTriggers, QAbstractItemView.EditTrigger])		# 设置表格是否可编辑
+```
+
+- 设置编辑规则的枚举
+
+```python
+QAbstractItemView.NoEditTriggers	# 0		# 不能对表格内容进行修改
+QAbstractItemView.CurrentChanged	# 1		# 任何时候都能修改
+QAbstractItemView.DoubleClicked		# 2		# 双击修改
+QAbstractItemView.SelectedClicked	# 4		# 单击已选中的内容
+QAbstractItemView.EditKeyPressed	# 8		# 当修改键被按下时修改单元格
+QAbstractItemView.AnyKeyPressed		# 16	# 按任意键修改单元格
+QAbstractItemView.AllEditTriggers	# 31	# 包括以上所有条件
 ```
 
 ### QToolTip
@@ -1335,6 +1514,24 @@ triggered(self, checked: bool = False) [signal]		# 触发一个信号
 
 # 示例：
 exitAct.triggered.connect(qApp.quit)
+```
+
+### Qt
+
+#### 文本对齐方式
+
+```python
+# 水平对齐
+Qt.AlignLeft		# 1		# 左对齐
+Qt.AlignRight		# 2		# 右对齐
+Qt.AlignHCenter		# 4		# 水平居中
+Qt.AlignJustify		# 8		# 可用空间中对齐
+
+# 垂直对齐
+Qt.AlignTop			# 32	# 顶部对齐
+Qt.AlignBottom		# 64	# 底部对齐
+Qt.AlignVCenter		# 128	# 垂直居中
+Qt.AlignBaseline	# 256	# 基线对齐
 ```
 
 ## QLayout

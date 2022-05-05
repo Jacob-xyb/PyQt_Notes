@@ -785,9 +785,15 @@ if __name__ == '__main__':
 
 ```
 
-
-
 # PyQt5_Tutorial
+
+## __PyQt5_QtCore.QObject
+
+*The base class of all Qt objects*
+
+QObject是Qt对象模型的核心。这个模型的中心特性是一个非常强大的无缝对象通信机制，称为信号和插槽。可以使用connect()将信号连接到槽位，也可以使用disconnect()销毁连接。
+
+TODO
 
 ## PyQt5.QtWidgets
 

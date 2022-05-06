@@ -16,7 +16,7 @@ class Ui_Form(object):
         self.tableWidget.setRowCount(4)
         self.tableWidget.setColumnCount(4)
         # 创建一个 QTableWidget 对象 == 设置标签
-        self.tableWidget.setHorizontalHeaderLabels(self.HeaderLabels)
+        self.tableWidget.setHorizontalHeaderLabels(self.HeaderLabels)   # 应该在行列设置后，不然不显示
         self.tableWidget.setVerticalHeaderLabels(['a', 'b', 'c', 'd'])
         # 用 QTableWidgetItem 装填数据
         for row in range(4):

@@ -93,6 +93,47 @@
 
 回到pycharm，可以看到工程目录下已经产生了first.ui，右键它，Qt—>Pyuic，点击后即可产生first.py文件，OK接下来就可以愉快地写代码了(⊙o⊙)…
 
+# PyQt5 入门
+
+## 开发模板
+
+```python
+from PyQt5.Qt import QApplication, QWidget, QPushButton, qApp
+import sys
+
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()  # 调用父类QWidget中的init方法
+        self.setWindowTitle("软件名称")
+        self.resize(600, 500)
+        self.btn = QPushButton(self)
+        self.func_list()
+
+    def func_list(self):
+        self.func()
+
+    def func(self):
+        self.btn.setText("软件内容")
+        self.btn.resize(120, 30)
+        self.btn.move(100, 100)
+        self.btn.setStyleSheet('background-color:green;font-size:20px;')
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)  # 创建一个应用程序对象
+    # sys.argv可以接收用户命令行启动时所输入的参数，根据参数执行不同程序
+    # qApp 为全局对象
+    print(sys.argv)
+    print(app.arguments())
+    print(qApp.arguments())
+    # 以上三个输出结果是一样的
+    window = Window()
+
+    window.show()
+    sys.exit(app.exec_())  # 0是正常退出
+```
+
 ## 最基本的调用方式
 
 - 文件结构
@@ -782,18 +823,100 @@ if __name__ == '__main__':
     myWin = MyMainForm()
     myWin.show()
     sys.exit(app.exec_())
-
 ```
 
 # PyQt5_Tutorial
 
-## __PyQt5_QtCore.QObject
+## QObject
 
 *The base class of all Qt objects*
 
 QObject是Qt对象模型的核心。这个模型的中心特性是一个非常强大的无缝对象通信机制，称为信号和插槽。可以使用connect()将信号连接到槽位，也可以使用disconnect()销毁连接。
 
-TODO
+### 基础方法
+
+```python
+.setObjectName(str)	# 设置对象名
+.objectName()		# 获取对象名，初始为空
+```
+
+### Property
+
+```python
+.setProperty(self, str, Any) -> bool	# 设置属性和值
+.property(self, str) -> Any				# 获取属性的值
+.dynamicPropertyNames(self) -> List[QByteArray]		# 获取所有的属性名称，返回的是Qt对象
+```
+
+**示例：**
+
+```python
+def func(self):
+    self.object.setProperty('level1', '第一')     # 给对象添加一个属性和值
+    tempList = [1, 2, 3, 4, 5]
+    self.object.setProperty('level2', tempList)
+    print(self.object.property('level1'))       # 获取属性对应的值，没有返回None，相当于字典
+    print(self.object.property('level2'))
+    print(self.object.dynamicPropertyNames())	# 获取所有的属性名称，返回的是Qt对象
+    
+# 第一
+# [1, 2, 3, 4, 5]
+# [PyQt5.QtCore.QByteArray(b'level1'), PyQt5.QtCore.QByteArray(b'level2')]
+```
+
+- 获取 **dynamicPropertyNames()** 所有 data
+
+```python
+l = self.object.dynamicPropertyNames()
+# 获取byte
+l[0].data()
+# 获取str
+l[0].data().decode()
+```
+
+### 对象间的父子关系
+
+```python
+.setParent(self, QObject)		# 设置爸爸
+.parent(self) -> QObject		# 返回爸爸
+# 此处没有 设置儿子 方法
+.children(self) -> List[QObject]	# 返回儿子列表
+
+# findChild()
+# 找寻直接子类, type 是指 QObject, QWidget.. 等等，但是不用用 type=QObject, 会报错
+.findChild(self, type, name: str = '', options: Union[Qt.FindChildOptions, Qt.FindChildOption] = Qt.FindChildrenRecursively) -> QObject
+.findChild(self, Tuple, name: str = '', options: Union[Qt.FindChildOptions, Qt.FindChildOption] = Qt.FindChildrenRecursively) -> QObject
+
+# findChildren()
+# 找寻所有符号条件的子类，返回子类列表
+.findChildren(self, type, name: str = '', options: Union[Qt.FindChildOptions, Qt.FindChildOption] = Qt.FindChildrenRecursively) -> List[QObject]
+.findChildren(self, Tuple, name: str = '', options: Union[Qt.FindChildOptions, Qt.FindChildOption] = Qt.FindChildrenRecursively) -> List[QObject]
+.findChildren(self, type, QRegExp, options: Union[Qt.FindChildOptions, Qt.FindChildOption] = Qt.FindChildrenRecursively) -> List[QObject]
+.findChildren(self, Tuple, QRegExp, options: Union[Qt.FindChildOptions, Qt.FindChildOption] = Qt.FindChildrenRecursively) -> List[QObject]
+.findChildren(self, type, QRegularExpression, options: Union[Qt.FindChildOptions, Qt.FindChildOption] = Qt.FindChildrenRecursively) -> List[QObject]
+.findChildren(self, Tuple, QRegularExpression, options: Union[Qt.FindChildOptions, Qt.FindChildOption] = Qt.FindChildrenRecursively) -> List[QObject]
+```
+
+**示例：**
+
+```python
+def func3(self):
+    object1 = QObject()
+    object1.setObjectName("obj1")
+    object2 = QObject()
+    object2.setObjectName("obj2")
+    object3 = QObject()
+    object3.setObjectName("obj3")
+    object2.setParent(object1)
+    object3.setParent(object2)
+    print(object1.parent())     # None                 
+    print(object2.parent().objectName())        # obj1
+    print(object2.children()[0].objectName())   # obj3
+    print(object3.children())   # []
+    
+	print(object1.findChild(QObject).objectName())      # obj2
+    print(object1.findChildren(QObject))                # 找到了两个对象
+```
 
 ## PyQt5.QtWidgets
 

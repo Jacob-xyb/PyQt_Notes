@@ -10,7 +10,7 @@ class Example(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        q_icon = QIcon('..\\..\\image\\Globe.ico')
+        q_icon = QIcon('../../../image/Globe.ico')
         exitAct = QAction(q_icon, 'Exit', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.triggered.connect(qApp.quit)

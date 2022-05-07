@@ -12,7 +12,7 @@ class Example(QMainWindow):
         # 这里创建了一个文本编辑区域，并把它放在QMainWindow的中间区域。这个组件或占满所有剩余的区域。
         textEdit = QTextEdit()
         self.setCentralWidget(textEdit)
-        q_icon = QIcon('..\\..\\image\\Globe.ico')
+        q_icon = QIcon('../../../image/Globe.ico')
         exitAct = QAction(q_icon, 'Exit_Act', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')

@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QLabel
 from PyQt5.QtGui import QIcon
 
 
@@ -15,11 +15,11 @@ class Example(QMainWindow):
         # 参数分别代表屏幕坐标的x、y和窗口大小的宽、高。也就是说这个方法是resize()和move()的合体。
         self.setGeometry(300, 300, 300, 220)
         self.setWindowTitle('Icon')
-        self.setWindowIcon(QIcon('..\\..\\image\\Globe.ico'))
-        self.show()
+        self.setWindowIcon(QIcon('Globe.ico'))
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Example()
+    ex.show()
     sys.exit(app.exec_())

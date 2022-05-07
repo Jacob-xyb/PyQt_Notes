@@ -827,20 +827,58 @@ if __name__ == '__main__':
 
 # PyQt5_Tutorial
 
+## 了解PyQt5库结构
+
+查看模块父类 `QObject.mro()`
+
+查看模块子类 `QObjcet.__subclasses__()`
+
+### 常用模块
+
+- QtWidgets
+
+  包含了一整套UI元素控件，用于建立符合系统风格的界面
+
+- QtGui
+
+  涵盖了多种基本图形功能的类
+
+  字体、图形、图标、颜色 ...
+
+- QtCore
+
+  涵盖了包的核心的非GUI功能
+
+  时间、文件、目录、数据类型、
+
+### 控件的创建
+
+当我们创建一个控件后，如果说，这个控件没有父控件，则把它当做顶层控件（窗口），系统会自动的给窗口添加一些装饰（标题栏），窗口控件具备一些特性（设置标题，图标）
+
+- 什么是控件
+
+  一个程序界面上的各个独立的元素：一块矩形区域
+
+  具备不同的功能：用户点击、接受用户输入、展示内容、存放其他控件
+
+  常用控件：按钮、输入控件、展示控件、等等...
+
 ## QObject
 
 *The base class of all Qt objects*
 
 QObject是Qt对象模型的核心。这个模型的中心特性是一个非常强大的无缝对象通信机制，称为信号和插槽。可以使用connect()将信号连接到槽位，也可以使用disconnect()销毁连接。
 
-### 基础方法
+### 对象名称
 
 ```python
 .setObjectName(str)	# 设置对象名
 .objectName()		# 获取对象名，初始为空
 ```
 
-### Property
+### 对象属性
+
+应用场景：用于qss的ID选择器，属性选择器，方便统一设置样式
 
 ```python
 .setProperty(self, str, Any) -> bool	# 设置属性和值
@@ -864,7 +902,7 @@ def func(self):
 # [PyQt5.QtCore.QByteArray(b'level1'), PyQt5.QtCore.QByteArray(b'level2')]
 ```
 
-- 获取 **dynamicPropertyNames()** 所有 data
+- 获取 **dynamicPropertyNames()** 所有属性名称
 
 ```python
 l = self.object.dynamicPropertyNames()
@@ -897,25 +935,215 @@ l[0].data().decode()
 .findChildren(self, Tuple, QRegularExpression, options: Union[Qt.FindChildOptions, Qt.FindChildOption] = Qt.FindChildrenRecursively) -> List[QObject]
 ```
 
+- **findChild(参数1, 参数2, 参数3)**
+
+参数1： 类型：QObject 等等
+
+​			   类型元组：(QPushButton, QLabel) 等等
+
+参数2：objectName ，可省略
+
+参数3：查找选项：
+
+​			Qt.FindChildrenRecursively	递归查找，默认选项
+
+​			Qt.FindDirectChildrenOnly	只查找直接子对象
+
+```python
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()  # 调用父类QWidget中的init方法
+        self.resize(600, 500)
+        self.object = QObject(self)
+        self.func_list()
+
+    def func_list(self):
+        self.func1()
+
+    def func1(self):
+        object0 = QObject()
+        object1 = QObject()
+        object1.setObjectName("obj1")
+        object2 = QObject()
+        object2.setObjectName("obj2")
+        object3 = QObject()
+        object3.setObjectName("obj3")
+        object4 = QObject()
+        object4.setObjectName("obj4")
+
+        object1.setParent(object0)
+        object2.setParent(object0)
+        object3.setParent(object1)
+        object4.setParent(object1)
+        print(object0.findChild(QObject, "obj4").objectName())      # obj4
+        print(object0.findChild(QObject, "obj4", Qt.FindChildrenRecursively).objectName())  # obj4
+        print(object0.findChild(QObject, "obj4", Qt.FindDirectChildrenOnly))    # None
+```
+
+### 判断类型
+
+```python
+.isWidgetType(self) -> bool		# 判断是否为 Widget
+.isWindowType(self) -> bool		# 判断是否为 Window
+```
+
+### 继承
+
+```python
+.inherits(self, str) -> bool	# 是否继承于某个类
+
+obj = QObject()
+print(obj.inherits('QPushButton'))    	# False
+btn = QPushButton()
+print(btn.inherits('QObject'))          # True
+```
+
+### 内置信号
+
+#### 改变名称
+
+```python
+# 并不是 setObjectName() 就会触发函数，而是 Name 前后的确有变化了才会触发
+.objectNameChanged(self, str) [signal]
+```
+
 **示例：**
 
 ```python
-def func3(self):
+def func7(self):
+    self.object.objectNameChanged.connect(lambda x: print("Name Changed", x))
+    btn = QPushButton(self)
+    # btn.clicked.connect(lambda: self.object.setObjectName("hello"))   # 这个只会接收一次
+    btn.clicked.connect(lambda: self.object.setObjectName(f"{time.time()}"))    # 这个更好玩
+```
+
+#### 删除对象
+
+```python
+.destroyed(self, object: QObject = None) [signal]		# 被删除时释放信号
+.deleteLater(self)		# 代码执行完后删除对象
+del [object]	# 只会删除标签，并不会删除对象本身内存
+```
+
+**示例：**
+
+```python
+def func5(self):
     object1 = QObject()
     object1.setObjectName("obj1")
     object2 = QObject()
     object2.setObjectName("obj2")
     object3 = QObject()
     object3.setObjectName("obj3")
-    object2.setParent(object1)
-    object3.setParent(object2)
-    print(object1.parent())     # None                 
-    print(object2.parent().objectName())        # obj1
-    print(object2.children()[0].objectName())   # obj3
-    print(object3.children())   # []
-    
-	print(object1.findChild(QObject).objectName())      # obj2
-    print(object1.findChildren(QObject))                # 找到了两个对象
+    self.object.destroyed.connect(lambda: print('object被释放'))
+    object1.destroyed.connect(lambda: print('object1被释放'))
+    object2.destroyed.connect(lambda: print('object2被释放'))
+    object3.destroyed.connect(lambda: print('object3被释放'))
+    object2.deleteLater()
+
+# deleteLater() 函数是让带代码执行完毕后再释放，因此 object2 最后释放    
+"""
+object1被释放
+object3被释放
+object2被释放
+"""
+```
+
+### 定时器
+
+```python
+timerEvent(self, QTimerEvent)		# 需要重载的函数
+# 第一个参数是时间间隔(ms) 返回事件id
+.startTimer(self, int, timerType: Qt.TimerType = Qt.CoarseTimer) -> int		
+.killTimer(self, int)		# 停止时间事件，参数为事件id
+```
+
+**示例**：
+
+```python
+class JxObject(QObject):
+    def timerEvent(self, QTimerEvent) -> None:
+        print(QTimerEvent, time.time())
+        
+...
+    def func6(self):
+        btn = QPushButton(self)
+        self.obj = JxObject()
+        startId = self.obj.startTimer(1000)
+        btn.pressed.connect(lambda: self.obj.killTimer(startId))
+```
+
+## 事件、信号和槽
+
+### 信号
+
+信号分为控件内置的一些信号：`QPushButton().pressed` 、`QPushButton().clicked` 等；也可以自定义信号：`pyqtSignal()`。
+
+语法：`object.信号.connect(槽函数)`
+
+- **特性**
+
+一个信号可以连接多个槽函数；
+
+一个信号也可以连接另外一个信号；
+
+信号的参数可以是任何Python类型；
+
+一个槽可以监听多个信号；
+
+···
+
+#### API
+
+```python
+widget.信号.connect(槽)
+obj.disconnect()			# 切断所有连接
+widget.blockSignals(bool)	# bool=True 临时阻断连接
+widget.signalsBlock()		# 获取信号是否被阻止
+widget.receivers(信号)		# 获取连接信号的数量; 示例：参数=widget.pressed
+```
+
+- **案例1**
+
+  每次在标题设置前，都加入前缀 `"Jx-"`
+
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/7 20:32"
+"""
+
+import time
+from PyQt5.Qt import QApplication, QWidget, QPushButton, qApp, QObject, Qt
+import sys
+
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()  # 调用父类QWidget中的init方法
+        self.resize(600, 500)
+        self.object = QObject(self)
+        self.func_list()
+
+    def func_list(self):
+        self.func1()
+
+    def func1(self):
+        def slotTitle(title):
+            self.blockSignals(True)
+            self.setWindowTitle("Jx-"+title)
+            self.blockSignals(False)
+
+        self.windowTitleChanged.connect(slotTitle)
+        self.setWindowTitle("信号与槽案例")
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)  # 创建一个应用程序对象
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())  # 0是正常退出
 ```
 
 ## PyQt5.QtWidgets
@@ -1243,6 +1471,18 @@ QAbstractItemView.SelectedClicked	# 4		# 单击已选中的内容
 QAbstractItemView.EditKeyPressed	# 8		# 当修改键被按下时修改单元格
 QAbstractItemView.AnyKeyPressed		# 16	# 按任意键修改单元格
 QAbstractItemView.AllEditTriggers	# 31	# 包括以上所有条件
+```
+
+#### .setContextMenuPolicy()
+
+```python
+.setContextMenuPolicy(self, Qt.ContextMenuPolicy)	# 允许右键产生子菜单、
+.customContextMenuRequested(self, QPoint) [signal]	# 自定义菜单请求
+
+
+# example
+.setContextMenuPolicy(Qt.CustomContextMenu)		# 设置自定义菜单
+.customContextMenuRequested.connect(self.tableWidget_menu)		# 连接自定义菜单
 ```
 
 ### QToolTip

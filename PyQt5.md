@@ -659,7 +659,85 @@ if __name__ == '__main__':
 
 ### 内容边距
 
-### TODO
+调整内容边距后，只在内容范围内显示内容。
+
+#### 获取
+
+```python
+.contentsRect(self) -> QRect
+```
+
+#### 设置
+
+```python
+.setContentsMargins(self, int, int, int, int)	# 0代表默认值
+.setContentsMargins(self, QMargins)
+```
+
+#### Example1
+
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/9 21:07"
+"""
+
+"""
+Example：
+创建一个窗口，包含一个标签，标签内容为：Hello Jx
+标签大小为100,60; 将标签文字放置在标签右下角
+"""
+
+import sys
+from PyQt5.Qt import *
+
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("01_QWidget_Example2")
+        self.resize(600, 400)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.label = QLabel(self)
+        self.label.resize(100, 60)
+        self.label.setText("Hello Jx")
+        self.label.setStyleSheet("background-color: cyan")
+        self.label.setContentsMargins(50, 30, 0, 0)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())
+```
+
+### 鼠标相关
+
+#### 设置鼠标形状
+
+```python
+.setCursor(self, Union, QCursor=None, Qt_CursorShape=None)
+.setCursor(self, Union[QCursor, Qt.CursorShape])
+
+# example:
+.setCursor(Qt.BusyCursor)
+```
+
+- **自定义鼠标**
+
+```python
+QCursor()
+QCursor(QBitmap, QBitmap, hotX: int = -1, hotY: int = -1)
+QCursor(QPixmap, hotX: int = -1, hotY: int = -1)	# 最常用,hotX 代表热点在图片中心
+QCursor(Union[QCursor, Qt.CursorShape])
+QCursor(Any)
+```
+
+#### TODO
 
 ## QLabel
 

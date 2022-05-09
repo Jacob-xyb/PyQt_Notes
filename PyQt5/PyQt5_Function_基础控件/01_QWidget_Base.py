@@ -1,14 +1,8 @@
 """
 __author__ = "Jacob-xyb"
 __web__ = "https://github.com/Jacob-xyb"
-__time__ = "2022/5/9 11:09"
+__time__ = "2022/5/9 20:59"
 """
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QIcon
-
-__author__ = "Jacob-xyb"
 
 import sys
 from PyQt5.Qt import *
@@ -24,6 +18,13 @@ class Window(QWidget):
         self.move(600, 300)
         self.resize(600, 400)
         self.setup_ui()
+
+    def paintEvent(self, event):
+        # 以下几行代码的功能是避免在多重传值后的功能失效
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
 
     def setup_ui(self):
         self.funcList()
@@ -59,6 +60,24 @@ def testFunc3(q: QWidget):
     q.setMaximumSize(200, 100)
 
 
+# 设置内容边距
+def testFunc4(q: QWidget):
+    q.setStyleSheet("background-color: cyan;")
+    print(f"查看内容区域尺寸：{q.contentsRect()}")
+    q.setContentsMargins(50, 40, 200, 200)
+    print(f"查看内容区域尺寸：{q.contentsRect()}")
+
+
+# 设置鼠标形状
+def testFunc5(q: QWidget):
+    q.setCursor(Qt.BusyCursor)
+    # 自定义鼠标形状
+    pixmap = QPixmap("Globe.ico")
+    pixmap = pixmap.scaled(20, 20)  # 缩放尺寸
+    cursor = QCursor(pixmap, 0, 0)
+    q.setCursor(cursor)
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     # == QWidge控件是一个用户界面的基本控件，它提供了基本的应用构造器。默认情况下，构造器是没有父级的，没有父级的构造器被称为窗口（window）。
@@ -66,5 +85,7 @@ if __name__ == '__main__':
     window.show()
     # testFunc2(window)
     # testFunc1(window)
-    testFunc3(window)
+    # testFunc3(window)
+    testFunc4(window)
+    testFunc5(window)
     sys.exit(app.exec_())

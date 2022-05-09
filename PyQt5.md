@@ -395,7 +395,7 @@ if __name__ == '__main__':
 
 ## QWidget
 
-基础窗口控件QWidget类是所有用户界面对象的基类，所有的窗口和控件都直接或间接继承QWidget类。
+基础窗口控件QWidget类是 **所有可视控件对象的基类**，所有的窗口和控件都直接或间接继承QWidget类。
 
 窗口控件（Widget，简称“控件”）是在PyQt中建立界面的主要元素。
 
@@ -407,93 +407,259 @@ if __name__ == '__main__':
 
 一个程序可以有多个窗口，一个窗口也可以有多个控件。
 
-### 基本函数调用方法
+### Tips
+
+1. **继承** 会有点问题，比如格式无法生效，需要手动设置 `self.setAttribute(Qt.WA_StyledBackground, True)`
+
+或者一劳永逸，重写 `paintEvent()` 函数， C++ 也需要重构函数。
 
 ```python
-# -*- coding: UTF-8 -*-
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtCore import QSize
-
-app = QApplication(sys.argv)
-# == QWidge控件是一个用户界面的基本控件，它提供了基本的应用构造器。默认情况下，构造器是没有父级的，没有父级的构造器被称为窗口（window）。
-w = QWidget()
-# == 改变尺寸
-# setFixed > resize == setGeometry
-# == 改变尺寸 == resize()方法能改变控件的大小，这里的意思是窗口宽 int px，高 int px。
-w.resize(300, 200)
-# == 改变尺寸 == setFixed..()固定宽度，高度
-w.setFixedWidth(400)
-w.setFixedHeight(300)
-tempQize = QSize(380, 280)
-w.setFixedSize(tempQize)    # == w.setFixedSize(int, int)
-# == 改变尺寸 == setGeometry()同时改变位置和大小
-w.setGeometry(580, 380, 360, 260)
-
-# == move()是修改控件位置的的方法。注：屏幕坐标系的原点是屏幕的左上角。
-w.move(600, 400)      # 不用好像是居中
-
-# == 窗口添加标题    # 默认为 python
-w.setWindowTitle('Hello QWidget')
-
-# == 窗口属性
-# == 窗口属性 == 直接调用==geometry()
-print(f"w.x(): {w.x()} || w.y(): {w.y()}"
-      f" || w.width(): {w.width()} || w.height(): {w.height()}")
-# geometry()获得客户区的属性
-print(f"w.geometry().x(): {w.geometry().x()} || w.geometry().y(): {w.geometry().y()}"
-      f" || w.geometry().width(): {w.geometry().width()} || w.geometry().height(): {w.geometry().height()}")
-# framGeometry()获得整个窗口的属性
-print(f"w.frameGeometry().x(): {w.frameGeometry().x()} || w.frameGeometry().y(): {w.frameGeometry().y()}"
-      f" || w.frameGeometry().width(): {w.frameGeometry().width()} || w.frameGeometry().height(): {w.frameGeometry().height()}")
-# -------- 并没有觉得有什么区别
-# == 窗口属性 == 获得客户区的大小
-print(f"w.size() -> QSize: {w.size()}")
-# == 窗口属性 == 获得窗口默认大小？？
-# 可能窗口不显示默认大小，控件才用
-# print(f"w.sizeHint(): {w.sizeHint()}")    # 返回的（-1，-1） 其实是（640，480）
-# == 窗口属性 == pos()
-print(f"左上角坐标：w.pos() -> QPoint: {w.pos()}")
-
-# show()能让控件在桌面上显示出来。控件在内存里创建，之后才能在显示器上显示出来。
-w.show()
-# 最后，我们进入了应用的主循环中，事件处理器这个时候开始工作。主循环从窗口上接收事件，并把事件传入到派发到应用控件里。
-# 当调用exit()方法或直接销毁主控件时，主循环就会结束。sys.exit()方法能确保主循环安全退出。外部环境能通知主控件怎么结束。
-sys.exit(app.exec_())
+def paintEvent(self, event):
+    # 以下几行代码的功能是避免在多重传值后的功能失效
+    opt = QStyleOption()
+    opt.initFrom(self)
+    p = QPainter(self)
+    self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
 ```
 
-> 需要注意的是，窗口和控件都继承自`QWidget`类，如果不为控件指定一个父对象，那么该控件就会被当作窗口处理，这时`setWindowTitle()` 和 `setWindowIcon()` 函数就会生效。
-
-### 高级函数用法
+### 控件的创建
 
 ```python
-# -*- coding: UTF-8 -*-
+QWidget(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())
+.__init__(self, parent=None, flags, Qt_WindowFlags=None, Qt_WindowType=None, *args, **kwargs):
+# parent: 父控件
+# flags: 标志位	# 后面再讲
+```
+
+```python
+# 如果没有父控件，就会被默认为顶层窗口，需要调用 show() 才能显示在桌面
+window = QWidget()
+window.show()
+```
+
+### 大小位置
+
+#### 控件的坐标系统
+
+![image-20220509105129872](https://s2.loli.net/2022/05/09/nvKwY5rLFsOxz7j.png)
+
+以左上角为坐标原点，如果为顶层窗口，就以桌面为坐标系，否则就以父控件为坐标系。
+
+#### 获取
+
+![image-20220509105546923](https://s2.loli.net/2022/05/09/6UrEeLWkIt3xb7X.png)
+
+如果为顶层窗口，不仅包括了用户区域（图中红线），还包括了外部框架的区域（图中绿线），使用API时注意区分。
+
+`move()` 移动的坐标是包含 **窗口框架** 的。
+
+```python
+def testFunc1(q: QWidget):
+    print(f"包含框架的坐标：{q.x(), q.y(), q.pos()}")
+    print(f"包含框架的宽和高：{q.frameGeometry().width(), q.frameGeometry().height(), q.frameSize()}")
+    print(f"用户区域的坐标：{q.geometry().x(), q.geometry().y(), q.geometry(), q.size(), q.rect()}")
+    print(f"用户区域的宽和高：{q.width(), q.height()}")
+```
+
+- **.x() & .y() & .pos()**
+
+包含窗口框架，注意获取坐标时，需要待窗口绘制完成后再获取，不然就会获取初始值。
+
+```python
+.x(self) -> int
+.y(self) -> int
+.pos(self) -> QPoint
+
+# .pos().x() == .x() && .pos().y() == .y()
+```
+
+- **.frameGeometry()**
+
+包含框架的宽和高
+
+```python
+.frameGeometry(self) -> QRect
+.frameSize(self) -> QSize
+```
+
+- **.geometry()**
+
+用户区域相当于父控件的位置和尺寸的组合
+
+```python
+.geometry(self) -> QRect
+
+# QRect(x, y, width, height)
+```
+
+- **.width() & .height()**
+
+用户区域的宽和高
+
+```python
+.width(self) -> int
+.height(self) -> int
+.size(self) -> QSize
+.rect(self) -> QRect	# 单纯的只包含宽和高 QRect(0, 0, width, height)
+
+# .width() == .geometry().width() && .height() == .geometry().height()
+```
+
+#### 设置
+
+**注意：** 但凡涉及 `.move()` 的， `.show()` 以后  `.move()` 就失效了。
+
+- **.move()**
+
+操控的是 `x`, `y`；也就是 `pos`，包括窗口框架
+
+```python
+.move(self, QPoint)
+.move(self, int, int)
+```
+
+- **.resize()**
+
+操控的是宽，高，不包括窗口框架。
+
+**注意：** `.resize()` 不能小于控件的 最小尺寸
+
+```python
+.resize(self, QSize)
+.resize(self, int, int)
+```
+
+- **.setGeometry()**
+
+`.setGeometry(x_noFrame, y_noFrame, width, height)`
+
+用户区域
+
+```python
+.setGeometry(self, QRect)
+.setGeometry(self, int, int, int, int)
+```
+
+- **.adjustSize()**
+
+```python
+.adjustSize(self)	# 根据内容自适应大小,优先级很低
+```
+
+- **.setFixedSize()**
+
+固定尺寸，优先级很高
+
+```python
+.setFixedSize(self, QSize)
+.setFixedSize(self, int, int)
+```
+
+#### Example1
+
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/9 15:54"
+"""
+
+"""
+Example：
+通过给定的个数，负责在一个窗口内创建相应个数的子控件。
+要求：控件按照九宫格的布局进行摆放。
+"""
+
+from PyQt5.Qt import *
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QToolTip
-from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QFont
+
+__author__ = "Jacob-xyb"
+
+import sys
+from PyQt5.Qt import *
 
 
-class WinForm(QWidget):
+class BaseWidget(QWidget):
+    def __init__(self, parent=None, x=10, y=10):
+        super().__init__(parent)
+        self.resize(x, y)
+
+    def paintEvent(self, event):
+        # 以下几行代码的功能是避免在多重传值后的功能失效
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+
+
+class Btn(QPushButton):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+
+class Window(QWidget):
     def __init__(self):
         super().__init__()
-        self.initUI()
+        self.setWindowTitle("01_QWidget_Example1")
+        self.totalCol = 3
+        self.setup_ui()
 
-    def initUI(self):
-        self.setWindowTitle("QWidget_Func")
-        # == 设置气泡提示
-        # == 静态方法设置字体
-        QToolTip.setFont(QFont('SansSerif', 10))
-        self.setToolTip("这是一个<b>气泡提示</b>")
-        # =================
+    def setup_ui(self):
+        inputNums = 66
+        if inputNums % self.totalCol:
+            self.totalRow = inputNums // self.totalCol + 1
+        else:
+            self.totalRow = inputNums // self.totalCol
+        # 先设置顶层控件的尺寸
+        temp_x, temp_y = 100, 20
+        self.resize(self.totalCol * temp_x, self.totalRow * temp_y)
+        # 开始添加控件
+        for i in range(inputNums):
+            temp_qwidget = BaseWidget(self, temp_x, temp_y)
+            temp_qwidget.setStyleSheet("background-color: red;border: 1px solid yellow")
+            pos_x = (i % self.totalCol) * temp_x
+            pos_y = (i // self.totalCol) * temp_y
+            temp_qwidget.move(pos_x, pos_y)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    w = WinForm()
-    w.show()
+    window = Window()
+    window.show()
     sys.exit(app.exec_())
 ```
+
+![image-20220509155425546](https://s2.loli.net/2022/05/09/FOlnwmHpau9cs7y.png)
+
+### 最大最小尺寸
+
+#### 获取
+
+```python
+.minimumWidth(self) -> int
+.minimumHeight(self) -> int
+.minimumSize(self) -> QSize
+.maximumWidth(self) -> int
+.maximumHeight(self) -> int
+.maximumSize(self) -> QSize
+```
+
+#### 设置
+
+```python
+.setMinimumSize(self, int, int)
+.setMinimumSize(self, QSize)
+.setMinimumWidth(self, int)
+.setMinimumHeight(self, int)
+.setMaximumSize(self, int, int)
+.setMaximumSize(self, QSize)
+.setMaximumWidth(self, int)
+.setMaximumHeight(self, int)
+```
+
+### 内容边距
+
+### TODO
 
 ## QLabel
 
@@ -990,7 +1156,7 @@ class Window(QWidget):
 ### 继承
 
 ```python
-.inherits(self, str) -> bool	# 是否继承于某个类
+.inherits(self, str) -> bool	# 是否继承于某个类，包括直接或间接继承
 
 obj = QObject()
 print(obj.inherits('QPushButton'))    	# False
@@ -1022,6 +1188,7 @@ def func7(self):
 ```python
 .destroyed(self, object: QObject = None) [signal]		# 被删除时释放信号
 .deleteLater(self)		# 代码执行完后删除对象
+# 并没有将对象立即销毁，而是向主消息循环发送了一个event，下一次主消息循环收到这个event之后才会销毁对象。
 del [object]	# 只会删除标签，并不会删除对象本身内存
 ```
 
@@ -1073,9 +1240,144 @@ class JxObject(QObject):
         btn.pressed.connect(lambda: self.obj.killTimer(startId))
 ```
 
+#### .startTimer()
+
+```python
+.startTimer(self, int, timerType: Qt.TimerType = Qt.CoarseTimer) -> int
+# int: ms
+# timerType:
+'''Qt.PreciseTimer		精确定时器：尽可能保持毫秒准确
+   Qt.CoarseTimer		粗定时器：5%的误差间隔
+   Qt.VertCoarseTimer	很粗的定时器：只能到秒级'''
+# return int: timer_id	定时器的唯一标识
+```
+
 ## 事件、信号和槽
 
-### 信号
+### 事件
+
+信号与槽机制是对事件机制的高级封装，事件机制更偏底层。
+
+在消息循环中，消息队列将事件包装成事件对象 `QEvent`,  然后发送给 `QApplication` 对象的 `notify(receiver, evt)` 方法。
+
+#### 初次了解事件
+
+重构 `notify()` 函数后，可以循环打印每次事件的接收者和对象。 
+
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/9 9:42"
+"""
+from PyQt5.Qt import *
+import sys
+
+
+class App(QApplication):
+    def notify(self, receiver, evt) -> bool:
+        # 先完成和父类相同的功能后，就可以打印出自己想查询的信息了
+        print(receiver, evt)
+        # 不知道如何分发信号，就交给父类处理，注意要保持和父类同样的返回值
+        return super().notify(receiver, evt)
+
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('事件机制')
+        self.resize(600, 450)
+        self.move(300, 300)
+        self.funcList()
+
+    def funcList(self):
+        self.func1()
+
+    def func1(self):
+        btn = QPushButton(self)
+        btn.setText("按钮")
+        btn.move(100, 100)
+        btn.clicked.connect(lambda: print("按钮被点击了"))
+
+
+if __name__ == '__main__':
+    app = App(sys.argv)
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())
+```
+
+- **筛选事件**
+
+```python
+class App(QApplication):
+    def notify(self, receiver, evt) -> bool:
+        # 先完成和父类相同的功能后，就可以打印出自己想查询的信息了
+        if receiver.inherits("QPushButton") and evt.type() == QEvent.MouseButtonPress:
+            print(receiver, evt)
+        # 不知道如何分发信号，就交给父类处理，注意要保持和父类同样的返回值
+        return super().notify(receiver, evt)
+```
+
+- **完整代码**
+
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/9 9:42"
+"""
+from PyQt5.Qt import *
+import sys
+
+
+class App(QApplication):
+    def notify(self, receiver, evt) -> bool:
+        # 先完成和父类相同的功能后，就可以打印出自己想查询的信息了
+        if receiver.inherits("QPushButton") and evt.type() == QEvent.MouseButtonPress:
+            print(receiver, evt)
+        # 不知道如何分发信号，就交给父类处理，注意要保持和父类同样的返回值
+        return super().notify(receiver, evt)
+
+
+class Btn(QPushButton):
+    def event(self, evt) -> bool:
+        # 此处不做判断，也会有很多事件打印出来，其中最核心的是绘制事件。
+        if evt.type() == QEvent.MouseButtonPress:
+            print(evt)
+        return super().event(evt)
+
+    def mousePressEvent(self, e: QMouseEvent) -> None:
+        print("鼠标被按下了..")
+        return super().mousePressEvent(e)
+
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('事件机制')
+        self.resize(600, 450)
+        self.move(300, 300)
+        self.funcList()
+
+    def funcList(self):
+        self.func1()
+
+    def func1(self):
+        btn = Btn(self)
+        btn.setText("按钮")
+        btn.move(100, 100)
+        btn.clicked.connect(lambda: print("按钮被点击了"))
+
+
+if __name__ == '__main__':
+    app = App(sys.argv)
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())
+```
+
+### 信号与槽
 
 信号分为控件内置的一些信号：`QPushButton().pressed` 、`QPushButton().clicked` 等；也可以自定义信号：`pyqtSignal()`。
 

@@ -22,8 +22,8 @@ class Window(QWidget):
         # self.func3()
         # self.func4()
         # self.func5()
-        # self.func6()
-        self.func7()
+        self.func6()
+        # self.func7()
 
     def func1(self):
         print(self.object.objectName())     # 初始化时，name为空
@@ -56,6 +56,7 @@ class Window(QWidget):
         print(object1.findChildren(QObject))                # 找到了两个对象
 
     def func4(self):
+        # .isWidgetType()
         print(self.object.isWidgetType())       # False # 判断是否为 Widget
         print(self.object.isWindowType())       # False # 判断是否为 Window
         print(self.object.inherits('QPushButton'))    # False # 判断继承
@@ -75,6 +76,7 @@ class Window(QWidget):
         object3.destroyed.connect(lambda: print('object3被释放'))
         object2.deleteLater()
 
+    # 定时器
     def func6(self):
         btn = QPushButton(self)
         self.obj = JxObject()

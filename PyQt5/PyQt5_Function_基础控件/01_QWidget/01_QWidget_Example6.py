@@ -24,6 +24,19 @@ class Window(QWidget):
     def setup_ui(self):
         self.setWindowOpacity(0.5)      # 设置窗口半透明
         self.setWindowFlag(Qt.FramelessWindowHint)
+        # 创建三个子控件按钮
+        btn_minimum = QPushButton(self)
+        btn_minimum.setText("最小化")
+        btn_maximum = QPushButton(self)
+        btn_maximum.setText("最大化")
+        btn_close = QPushButton(self)
+        btn_close.setText("关闭")
+        # 摆放这些按钮
+        width = self.width()
+        btn_close_x = width - btn_close.width()
+        btn_close_y = 10
+        btn_close.move(btn_close_x, btn_close_y)
+
 
     def mousePressEvent(self, e: QMouseEvent) -> None:
         self.current_pos = e.globalPos()

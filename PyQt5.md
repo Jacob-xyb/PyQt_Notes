@@ -722,6 +722,7 @@ if __name__ == '__main__':
 ```python
 .setCursor(self, Union, QCursor=None, Qt_CursorShape=None)
 .setCursor(self, Union[QCursor, Qt.CursorShape])
+.unsetCursor(self)
 
 # example:
 .setCursor(Qt.BusyCursor)
@@ -737,7 +738,361 @@ QCursor(Union[QCursor, Qt.CursorShape])
 QCursor(Any)
 ```
 
-#### TODO
+#### 鼠标位置
+
+```python
+cursor(self) -> QCursor		# 获取鼠标对象
+.pos() -> QPoint		# 默认相对于桌面的坐标位置	
+.pos(QScreen) -> QPoint
+
+# 设置鼠标位置
+.setPos(int, int)
+.setPos(QPoint)
+.setPos(QScreen, int, int)
+.setPos(QScreen, QPoint)
+
+.pixmap(self) -> QPixmap	# 获取鼠标图片
+```
+
+#### 鼠标跟踪
+
+如果没有开启鼠标跟踪，则只有当鼠标处于激活状态（按住左键、右键、中键等）才会触发 move 事件。
+
+```python
+def mouseMoveEvent(self, a0: QMouseEvent) -> None:
+    print("鼠标移动了")
+    return super().mouseMoveEvent(a0)
+```
+
+开启后就可以实时触发事件
+
+```python
+print(q.hasMouseTracking())     # 默认是 False
+q.setMouseTracking(True)            # 设置为跟踪状态
+```
+
+`QMouseEvent` 里面可以获取 全局 和 局部 的坐标。
+
+#### Example1
+
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/10 10:53"
+"""
+
+"""
+Example：
+创建一个窗口，包含一个标签，标签随鼠标位置移动，鼠标设置为指定图标
+"""
+
+import sys
+from PyQt5.Qt import *
+
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("01_QWidget_Example3")
+        self.resize(600, 400)
+        self.setup_ui()
+
+    def setup_ui(self):
+        # 先创建好一个标签对象
+        self.label = QLabel(self)
+        self.label.resize(60, 20)
+        self.label.setText("Hello Jx")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setStyleSheet("background-color: red")
+        # 再把鼠标设置一下
+        cursor = QCursor(QPixmap("Globe.ico").scaled(20, 20), 0, 0)
+        self.setCursor(cursor)
+        self.setMouseTracking(True)
+
+    def mouseMoveEvent(self, e: QMouseEvent) -> None:
+        self.label.move(e.x(), e.y())
+        return super().mouseMoveEvent(e)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())
+```
+
+### 事件
+
+#### 基础事件
+
+```python
+def showEvent(self, e: QShowEvent) -> None:
+    print("窗口开始展示，触发showEvent事件")
+    return super(Window, self).showEvent(e)
+
+def closeEvent(self, e: QCloseEvent) -> None:
+    print("触发closeEvent事件")
+    return super(Window, self).closeEvent(e)
+
+# 窗口移动判定的是窗口的左上角坐标
+def moveEvent(self, e: QMoveEvent) -> None:
+    print("窗口被移动")  # show() 时就会打印一次
+    return super(Window, self).moveEvent(e)
+
+def resizeEvent(self, e: QResizeEvent) -> None:
+    print("窗口改变了尺寸大小")  # show() 时也会触发一次
+    return super(Window, self).resizeEvent(e)
+
+# 鼠标进来和离开事件 判定范围 不包括标题区域
+def enterEvent(self, e: QEvent) -> None:
+    print("鼠标进来了")
+    return super(Window, self).enterEvent(e)
+
+def leaveEvent(self, e: QEvent) -> None:
+    print("鼠标离开了")
+    return super(Window, self).leaveEvent(e)
+
+def mousePressEvent(self, e: QMouseEvent) -> None:
+    print("鼠标被按下")
+    return super(Window, self).mousePressEvent(e)
+
+def mouseReleaseEvent(self, e: QMouseEvent) -> None:
+    print("鼠标被释放了")
+    return super(Window, self).mouseReleaseEvent(e)
+
+def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
+    print("鼠标双击")
+    return super(Window, self).mouseDoubleClickEvent(e)
+
+def keyPressEvent(self, e: QKeyEvent) -> None:
+    print("键盘上某一个按键被按下")
+    return super(Window, self).keyPressEvent(e)
+
+def keyReleaseEvent(self, e: QKeyEvent) -> None:
+    print("键盘上某一个按键被释放")
+    return super(Window, self).keyReleaseEvent(e)
+
+# 获取焦点时调用
+def focusInEvent(self, e: QFocusEvent) -> None:
+    return super(Window, self).focusInEvent(e)
+
+# 失去焦点时调用
+def focusOutEvent(self, e: QFocusEvent) -> None:
+    return super(Window, self).focusOutEvent(e)
+
+...
+
+dragEnterEvent()	# 拖拽进入控件时调用
+dragLeaveEvent()	# 拖拽离开控件时调用
+dragMoveEvent()		# 拖拽在控件内移动时调用
+drogEvent()			# 拖拽放下时调用
+
+paintEvent()		# 显示或者更新控件时调用
+changeEvent()		# 窗体改变，字体改变时调用
+contextMenuEvent()	# 访问右键菜单时调用
+
+inputMethodEvent()	# 输入法调用
+```
+
+#### Example1
+
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/10 13:49"
+"""
+
+"""
+Example：
+创建一个窗口，包含一个标签。
+鼠标移动进来时和出去时的文字不一样；
+然后能捕捉快捷键：tab, ctrl+s, ctrl+shift+a
+"""
+
+import sys
+from PyQt5.Qt import *
+
+class Label(QLabel):
+    def enterEvent(self, e: QEvent) -> None:
+        self.setText("欢迎光临！")
+        return super(Label, self).enterEvent(e)
+
+    def leaveEvent(self, e: QEvent) -> None:
+        self.setText("谢谢惠顾！")
+        return super(Label, self).leaveEvent(e)
+
+    def keyPressEvent(self, ev: QKeyEvent) -> None:
+        # 按下单个键
+        if ev.key() == Qt.Key_Tab:
+            self.setText("按下了 Tab 键")
+        # 按下组合键，就要分修饰符和普通键位
+        elif ev.modifiers() == Qt.ControlModifier and ev.key() == Qt.Key_S:
+            self.setText("按下了 Ctrl+S 键")
+        # 如果是多个组合键，用 或| 运算符运算
+        elif ev.modifiers() == Qt.ControlModifier | Qt.ShiftModifier and ev.key() == Qt.Key_A:
+            self.setText("按下了 Ctrl+Shift+A 键")
+        return super(Label, self).keyPressEvent(ev)
+
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("01_QWidget_Example3")
+        self.resize(600, 400)
+        self.setup_ui()
+
+    def setup_ui(self):
+        # 先创建好一个标签对象
+        self.label = Label(self)
+        self.label.resize(100, 80)
+        self.label.move(200, 100)
+        self.label.setText("Hello Jx")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setStyleSheet("background-color: red")
+        self.label.grabKeyboard()       # 捕获全局键盘
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())
+```
+
+### 父子控件
+
+```python
+.childAt(x, y)
+.parentWidget()
+.childrenRect()		# 所有子控件组成的边界矩形
+```
+
+#### Example1
+
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/10 14:16"
+"""
+
+"""
+Example：
+创建一个窗口，包含十个标签。
+利用父类实现：点击哪个标签就改变哪个标签的背景颜色。
+"""
+
+import sys
+from PyQt5.Qt import *
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("01_QWidget_Example5")
+        self.resize(600, 400)
+        self.setup_ui()
+
+    def setup_ui(self):
+        # 先创建好一个标签对象
+        for i in range(1, 11):
+            label = QLabel(self)
+            label.resize(100, 20)
+            label.setAlignment(Qt.AlignCenter)
+            label.move(40 * i, 20 * i)
+            label.setText(f"标签 {i}")
+
+    def mousePressEvent(self, e: QMouseEvent) -> None:
+        tempWidget = self.childAt(e.localPos().toPoint())
+        if tempWidget:
+            tempWidget.setStyleSheet("background-color: red;")
+        return super(Window, self).mousePressEvent(e)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())
+```
+
+### 层级控制
+
+调整控件z轴顺序
+
+```python
+.lower()		# 将控件降低到最底层
+.raise_()		# 将控件提升到最上层
+a.stackUnder(b)	# 让a放到b下面（a，b同级）
+```
+
+### 顶层窗口相关
+
+#### 图标设置
+
+```python
+.setWindowIcon(QIcon(str))		# 设置窗口图标
+.setWindowTitle(str)			# 设置标题
+.windowTitle()		# 获取标题
+```
+
+#### 不透明度
+
+```python
+.setWindowOpacity(float)		# 不透明度： 0.0 ~ 1.0
+.windowOpacity()		# 获取不透明度
+```
+
+#### 窗口状态
+
+```python
+.windowState()		# 获取窗口状态
+.setWindowState(state)		# 设置窗口状态
+"""
+state:
+	Qt.WindowNoState		无状态
+	Qt.WindowMinimized		最小化
+	Qt.WindowMaximized		最大化
+	Qt.WindowFullScreen		全屏
+	Qt.WindowActive			活动窗口
+"""
+```
+
+#### 最大化最小化
+
+```python
+.showFullScreen()
+.showMaximized()
+.showMinimized()
+.showNormal()
+.isMinimized()
+.isMaximized()
+.isFullScreen()
+```
+
+#### 窗口标志
+
+```python
+window.setWindowFlags(Qt.WindowStaysOnTopHint)
+"""
+Flag:
+	Qt.FramelessWindowHint		窗口无边框
+	Qt.MSWindowsFixedSizeDialogHint		窗口无法调整大小
+	Qt.CustomizeWindowHint		有边框但无标题栏和按钮，不能移动和拖动
+	Qt.WindowTitleHint			添加标题栏和一个关闭按钮
+	Qt.WindowSystemMenuHint		添加系统目录和一个关闭按钮
+	Qt.WindowMaximizeButtonHint	激活最大化和关闭按钮，禁止最小化按钮
+"""
+```
+
+#### Example1
+
+
+
+
+
+
 
 ## QLabel
 
@@ -767,7 +1122,7 @@ from PyQt5.QtCore import Qt
 |          方法          |                             描述                             |
 | :--------------------: | :----------------------------------------------------------: |
 |     setAlignment()     |                    按固定值方式对齐文本：                    |
-|                        | 水平方向：`Qt.AlignLeft`,`Qt.AliginRight`,`Qt.AliginCenter`,`Qt.AlignJustify(两端对齐)` |
+|                        | 水平方向：`Qt.AlignLeft`,`Qt.AlignRight`,`Qt.AlignCenter`,`Qt.AlignJustify(两端对齐)` |
 |                        |  垂直方向：`Qt.AlignTop`,`Qt.AlignBottom`,`Qt.AlignVCenter`  |
 |      setPixmap()       |                设置`QLabel`为一个`Pixmap`图片                |
 | setOpenExternalLinks() |               打开允许访问超链接，默认是不允许               |
@@ -1453,6 +1808,16 @@ if __name__ == '__main__':
     window = Window()
     window.show()
     sys.exit(app.exec_())
+```
+
+#### 事件转发
+
+事件转发：当事件发生时，就会发送事件，如果当前控件没有对事件进行处理，则会发送给 父控件 处理。
+
+```python
+evt.accept()		# 事件被接收，不会继续往父控件传递
+evt.ignore()		# 事件被忽略，会继续向父控件传递
+evt.isAccepted()	# 查看事件被接收的状态
 ```
 
 ### 信号与槽

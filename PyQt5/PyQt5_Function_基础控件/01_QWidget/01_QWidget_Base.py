@@ -1,7 +1,7 @@
 """
 __author__ = "Jacob-xyb"
 __web__ = "https://github.com/Jacob-xyb"
-__time__ = "2022/5/9 20:59"
+__time__ = "2022/5/10 10:28"
 """
 
 import sys
@@ -25,6 +25,10 @@ class Window(QWidget):
         opt.initFrom(self)
         p = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+
+    def mouseMoveEvent(self, a0: QMouseEvent) -> None:
+        print("鼠标移动了")
+        return super().mouseMoveEvent(a0)
 
     def setup_ui(self):
         self.funcList()
@@ -72,20 +76,26 @@ def testFunc4(q: QWidget):
 def testFunc5(q: QWidget):
     q.setCursor(Qt.BusyCursor)
     # 自定义鼠标形状
-    pixmap = QPixmap("Globe.ico")
+    pixmap = QPixmap("../Globe.ico")
     pixmap = pixmap.scaled(20, 20)  # 缩放尺寸
     cursor = QCursor(pixmap, 0, 0)
     q.setCursor(cursor)
+    q.unsetCursor()     # 重置鼠标
+    current_cursor = q.cursor()
+    btn = QPushButton(q)
+    btn.clicked.connect(lambda: print(current_cursor.pos()))
+    print(q.hasMouseTracking())     # 默认是 False
+    q.setMouseTracking(True)            # 设置为跟踪状态
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     # == QWidge控件是一个用户界面的基本控件，它提供了基本的应用构造器。默认情况下，构造器是没有父级的，没有父级的构造器被称为窗口（window）。
     window = Window()
+    testFunc5(window)
     window.show()
     # testFunc2(window)
     # testFunc1(window)
     # testFunc3(window)
-    testFunc4(window)
-    testFunc5(window)
+    # testFunc4(window)
     sys.exit(app.exec_())

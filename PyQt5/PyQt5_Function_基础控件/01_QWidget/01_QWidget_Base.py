@@ -88,11 +88,19 @@ def testFunc5(q: QWidget):
     q.setMouseTracking(True)            # 设置为跟踪状态
 
 
+# 信息提示
+def testFunc6(q: QWidget):
+    q.setToolTip("信息提示")
+    q.setToolTipDuration(2000)
+    q.setWhatsThis("这是个测试")
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     # == QWidge控件是一个用户界面的基本控件，它提供了基本的应用构造器。默认情况下，构造器是没有父级的，没有父级的构造器被称为窗口（window）。
     window = Window()
-    testFunc5(window)
+    # testFunc5(window)
+    testFunc6(window)
     window.show()
     # testFunc2(window)
     # testFunc1(window)

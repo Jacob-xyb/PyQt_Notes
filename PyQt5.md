@@ -1088,11 +1088,256 @@ Flag:
 
 #### Example1
 
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/11 9:52"
+"""
+
+"""
+Example：
+创建一个窗口，无边框无标题栏，窗口半透明，自定义最小化，最大化，关闭按钮，支持拖拽用户区移动
+"""
+
+import sys
+from PyQt5.Qt import *
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("01_QWidget_Example5")
+        self.dragFlag = False
+        self.current_pos = None
+        self.current_widget_pos = None
+        self.setup_ui()
+        self.resize(600, 400)
+
+    def setup_ui(self):
+        self.setWindowOpacity(0.5)      # 设置窗口半透明
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        # 创建三个子控件按钮
+        self.btn_minimum = QPushButton(self)
+        self.btn_minimum.setText("最小化")
+        self.btn_maximum = QPushButton(self)
+        self.btn_maximum.setText("最大化")
+        self.btn_close = QPushButton(self)
+        self.btn_close.setText("关闭")
+        # 如果不手动 resize，就会有问题：第一次调用的 width 与实际的 width 不一致
+        self.btn_minimum.resize(75, 25)
+        self.btn_maximum.resize(75, 25)
+        self.btn_close.resize(75, 25)
+        # 设置功能
+        self.btn_close.clicked.connect(lambda: self.close())
+        self.btn_minimum.clicked.connect(lambda: self.showMinimized())
+        self.btn_maximum.clicked.connect(lambda: self.btnMaxClickEvent())
+
+    def btnMaxClickEvent(self):
+        if self.windowState() == Qt.WindowNoState:
+            self.btn_maximum.setText("缩放窗口")
+            self.showMaximized()
+        else:
+            self.btn_maximum.setText("最大化")
+            self.showNormal()
+
+    def resizeEvent(self, e: QResizeEvent) -> None:
+        # 摆放这些按钮
+        width = self.width()
+        btn_close_x = width - self.btn_close.width()
+        btn_close_y = 10
+        self.btn_close.move(btn_close_x, btn_close_y)
+        self.btn_maximum.move(btn_close_x - self.btn_maximum.width(), btn_close_y)
+        self.btn_minimum.move(self.btn_maximum.x() - self.btn_minimum.width(), btn_close_y)
+        return super(Window, self).resizeEvent(e)
+
+    def mousePressEvent(self, e: QMouseEvent) -> None:
+        if e.button() == Qt.LeftButton:
+            self.dragFlag = True
+            self.current_pos = e.globalPos()
+            self.current_widget_pos = self.pos()
+        return super(Window, self).mousePressEvent(e)
+
+    def mouseMoveEvent(self, e: QMouseEvent) -> None:
+        if self.dragFlag:
+            self.move(self.current_widget_pos + (self.cursor().pos() - self.current_pos))
+        return super(Window, self).mouseMoveEvent(e)
+
+    def mouseReleaseEvent(self, e: QMouseEvent) -> None:
+        if e.button() == Qt.LeftButton:
+            self.dragFlag = False
+        return super(Window, self).mouseReleaseEvent(e)
 
 
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())
+```
+
+### 交互状态
+
+#### 可用与显示
+
+当一个窗口被绘制后，如果设置其中一个控件隐藏，实现的方式是从底层重新开始绘制一遍，注意一下即可。
+
+```python
+# 是否可用
+.setEnable(bool)			# 设置控件是否禁用
+.isEnable() -> bool			# 查看控件是否禁用
+# 是否显示
+.setVisible(bool)			# 设置控件是否可见，传递参数为 True 也未必可见
+# .setVisible 衍生函数
+.setHidden(bool)
+.show()
+.hide()			# 相对于父控件，也就是说父控件显示的情况下，当前控件是否被隐藏
+
+.isHidden()
+.isVisible()		# 即使被其他控件遮挡，也属于可见状态
+.isVisibleTo(widget)	# 判断是否能跟着 widget 显示
+
+.isActiveWindow()		# 是否为活跃窗口，并不是最上层的窗口才是活跃窗口
+```
+
+####  是否编辑
+
+```python
+.setWindowModified(bool)	# 设置被编辑状态 [*], []不会显示，set 为True时显示*，[]内只能放 *
+.isWindowModified()			# 查看窗口是否是被编辑状态
+```
+
+#### 关闭
+
+`.close()` 也可以隐藏控件。
+
+但是开启属性后，就会释放掉控件：`.setAttribute(Qt.WA_DeleteOnClose, True)`
+
+#### Example1
+
+```python
+"""
+__author__ = "Jacob-xyb"
+__web__ = "https://github.com/Jacob-xyb"
+__time__ = "2022/5/11 13:45"
+"""
+
+"""
+Example：
+创建一个窗口，包含一个文本框、按钮、标签
+默认状态：标签隐藏，文本框和按钮显示，按钮设置为不可用状态
+要求：1.当文本框有内容时，让按钮可用，否则不可用
+     2.当文本框内容为 Jx 时，点击按钮则显示标签，且文本为登陆成功，否则为失败
+"""
+
+import sys
+from PyQt5.Qt import *
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("01_QWidget_Example7")
+        self.resize(600, 400)
+        # 首先创建所有需要的控件
+        self.lineEdit = QLineEdit(self)
+        self.btn = QPushButton(self)
+        self.label = QLabel(self)
+        self.setup_ui()
+
+    def setup_ui(self):
+        # 简单调整下布局
+        self.lineEdit.resize(200, 25)
+        self.lineEdit.move(10, 10)
+        self.btn.resize(40, 25)
+        self.btn.setText("登陆")
+        self.btn.move(self.lineEdit.frameGeometry().topRight() + QPoint(10, 0))
+        self.label.resize(100, 25)
+        self.label.setStyleSheet("background-color: gray")
+        self.label.move(self.lineEdit.frameGeometry().bottomLeft() + QPoint(0, 20))
+        self.label.setAlignment(Qt.AlignCenter)
+        # 默认状态
+        self.label.setVisible(False)    # 标签隐藏
+        self.btn.setEnabled(False)      # 按钮不可用
+        # 实现要求
+        self.lineEdit.textChanged.connect(self.textChangedEvent)
+        self.btn.clicked.connect(self.btnClickedEvent)
+
+    def textChangedEvent(self):
+        self.btn.setEnabled(bool(self.sender().text()))
+        self.label.setVisible(False)
+
+    def btnClickedEvent(self):
+        if self.lineEdit.text() == "Jx":
+            self.label.setText("登陆成功")
+        else:
+            self.label.setText("登陆失败")
+        self.label.setVisible(True)
 
 
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())
+```
 
+### 信息提示
+
+#### 状态栏
+
+`MainWindow` 特有
+
+```python
+.setStatusTip(str)
+.statisTip()
+
+# 只有鼠标移动到调用对像上，才会设置状态栏
+```
+
+#### 信息提示
+
+```python
+.setToolTip(str)
+.toolTip()
+.setToolTipDuration(msec: int)		# 设置持续时长
+```
+
+#### 这是啥提示
+
+窗口模式需要改变，才能显示 。`setWindowFlags(Qt.WindowContextHelpButtonHint)`
+
+```python
+.setWhatsThis(str)
+.whatsThis()
+```
+
+### 焦点控制
+
+控件的状态 称为 获取焦点 的状态。 常见的是点击一下。
+
+#### 单个控件角度
+
+```python
+.setFocus()		# 指定控件获取焦点
+.setFocusPolicy(Policy)		# 设置获取焦点策略
+"""
+Policy:
+	Qt.TabFocus
+	Qt.ClickFocus
+	Qt.StrongFocus		tab或单击均可，默认策略
+	Qt.NoFocus			tab或单击均不可
+"""
+.clearFocus()		# 取消焦点
+```
+
+#### 父控件角度
+
+```python
+.focusWidget()			# 获取子控件中当前聚焦的控件
+.focusNextChild()		# 聚焦下一个子控件
+
+```
+
+#### TODO
 
 ## QLabel
 

@@ -60,6 +60,8 @@
 
   安装好后可以 `win` 搜索 `designer` 查看是否安装成功
 
+  如果搜索不到，就在 `...\miniconda3\Lib\site-packages\qt5_applications\Qt\bin\designer.exe` 路径下
+
 - step2
 
   打开PyCharm，打开File—>Settings—>External Tools,点击加号来添加自己的工具

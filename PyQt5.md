@@ -1711,9 +1711,26 @@ if __name__ == '__main__':
 
 ## QObject
 
-*The base class of all Qt objects*
+***The base class of all Qt objects***
 
 QObject是Qt对象模型的核心。这个模型的中心特性是一个非常强大的无缝对象通信机制，称为信号和插槽。可以使用connect()将信号连接到槽位，也可以使用disconnect()销毁连接。
+
+### 方法解析顺序
+
+```python
+from PyQt5.Qt import *
+
+mros = QObject.mro()    # Return a type's method resolution order.
+for mro in mros:
+    print(mro)
+    
+"""
+<class 'PyQt5.QtCore.QObject'>
+<class 'sip.wrapper'>
+<class 'sip.simplewrapper'>
+<class 'object'>	
+"""
+```
 
 ### 对象名称
 
